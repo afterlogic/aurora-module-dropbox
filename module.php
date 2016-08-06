@@ -37,7 +37,7 @@ class DropBoxModule extends AApiModule
 	public function GetStorages(&$aResult)
 	{
 			$oExternalServicesModule = \CApi::GetModuleDecorator('ExternalServices');
-			$iUserId = \CApi::getLogginedUserId();
+			$iUserId = \CApi::getAuthenticatedUserId();
 			$oSocialAccount = $oExternalServicesModule->GetAccount($iUserId, self::$sService);
 			
 			if ($oSocialAccount instanceof COAuthAccount && $oSocialAccount->Type === self::$sService)
@@ -56,7 +56,7 @@ class DropBoxModule extends AApiModule
 		if ($sType === self::$sService)
 		{
 			$oExternalServicesModule = \CApi::GetModuleDecorator('ExternalServices');
-			$iUserId = \CApi::getLogginedUserId();
+			$iUserId = \CApi::getAuthenticatedUserId();
 			$oSocialAccount = $oExternalServicesModule->GetAccount($iUserId, $sType);
 			$mResult = new \Dropbox\Client($oSocialAccount->AccessToken, "Aurora App");
 		}
