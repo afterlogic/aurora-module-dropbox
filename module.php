@@ -1,11 +1,11 @@
 <?php
 
-class DropBoxModule extends AApiModule
+class DropBoxAuthWebclientModule extends AApiModule
 {
 	protected static $sService = 'dropbox';
 	
 	protected $aRequireModules = array(
-		'ExternalServices', 'DropBoxAuth'
+		'OAuthIntegratorWebclient', 'DropBoxAuthWebclient'
 	);
 	
 	public function init() 
@@ -27,7 +27,7 @@ class DropBoxModule extends AApiModule
 		$this->subscribeEvent('Files::Copy::after', array($this, 'Copy')); 
 		
 /*
-		$this->subscribeEvent('ExternalServicesAction', array($this, 'onExternalServicesAction'));
+		$this->subscribeEvent('OAuthIntegratorAction', array($this, 'onOAuthIntegratorAction'));
 		$this->subscribeEvent('GetServices', array($this, 'onGetServices'));
 		$this->subscribeEvent('GetServicesSettings', array($this, 'onGetServicesSettings'));
 		$this->subscribeEvent('UpdateServicesSettings', array($this, 'onUpdateServicesSettings'));
@@ -36,9 +36,9 @@ class DropBoxModule extends AApiModule
 	
 	public function GetStorages(&$aResult)
 	{
-			$oExternalServicesModule = \CApi::GetModuleDecorator('ExternalServices');
+			$oOAuthIntegratorWebclientModule = \CApi::GetModuleDecorator('OAuthIntegratorWebclient');
 			$iUserId = \CApi::getAuthenticatedUserId();
-			$oSocialAccount = $oExternalServicesModule->GetAccount($iUserId, self::$sService);
+			$oSocialAccount = $oOAuthIntegratorWebclientModule->GetAccount($iUserId, self::$sService);
 			
 			if ($oSocialAccount instanceof COAuthAccount && $oSocialAccount->Type === self::$sService)
 			{		
@@ -55,9 +55,9 @@ class DropBoxModule extends AApiModule
 		$mResult = false;
 		if ($sType === self::$sService)
 		{
-			$oExternalServicesModule = \CApi::GetModuleDecorator('ExternalServices');
+			$oOAuthIntegratorWebclientModule = \CApi::GetModuleDecorator('OAuthIntegratorWebclient');
 			$iUserId = \CApi::getAuthenticatedUserId();
-			$oSocialAccount = $oExternalServicesModule->GetAccount($iUserId, $sType);
+			$oSocialAccount = $oOAuthIntegratorWebclientModule->GetAccount($iUserId, $sType);
 			$mResult = new \Dropbox\Client($oSocialAccount->AccessToken, "Aurora App");
 		}
 		
