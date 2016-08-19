@@ -13,6 +13,7 @@ class DropBoxModule extends AApiModule
 		$this->incClass('Dropbox/autoload');
 		
 		$this->subscribeEvent('Files::GetStorages::after', array($this, 'GetStorages'));
+		$this->subscribeEvent('Files::GetFile', array($this, 'onGetFile'));
 		$this->subscribeEvent('Files::GetFiles::after', array($this, 'GetFiles'));
 		$this->subscribeEvent('Files::FileExists::after', array($this, 'FileExists'));
 		$this->subscribeEvent('Files::GetFileInfo::after', array($this, 'GetFileInfo'));
@@ -103,45 +104,46 @@ class DropBoxModule extends AApiModule
 	 */
 	protected function PopulateFileInfo($sType, $oClient, $aData)
 	{
-		$bResult = false;
+		$mResult = false;
 		if ($aData && is_array($aData))
 		{
 			$sPath = ltrim($this->_dirname($aData['path']), '/');
 			
 //			$oSocial = $this->GetSocial($oAccount);
-			$bResult /*@var $bResult \CFileStorageItem */ = new  \CFileStorageItem();
-			$bResult->IsExternal = true;
-			$bResult->TypeStr = $sType;
-			$bResult->IsFolder = $aData['is_dir'];
-			$bResult->Id = $this->_basename($aData['path']);
-			$bResult->Name = $bResult->Id;
-			$bResult->Path = !empty($sPath) ? '/'.$sPath : $sPath;
-			$bResult->Size = $aData['bytes'];
+			$mResult /*@var $mResult \CFileStorageItem */ = new  \CFileStorageItem();
+			$mResult->IsExternal = true;
+			$mResult->TypeStr = $sType;
+			$mResult->IsFolder = $aData['is_dir'];
+			$mResult->Id = $this->_basename($aData['path']);
+			$mResult->Name = $mResult->Id;
+			$mResult->Path = !empty($sPath) ? '/'.$sPath : $sPath;
+			$mResult->Size = $aData['bytes'];
 //			$bResult->Owner = $oSocial->Name;
-			$bResult->LastModified = date_timestamp_get($oClient->parseDateTime($aData['modified']));
-			$bResult->Shared = isset($aData['shared']) ? $aData['shared'] : false;
-			$bResult->FullPath = $bResult->Name !== '' ? $bResult->Path . '/' . $bResult->Name : $bResult->Path ;
+			$mResult->LastModified = date_timestamp_get($oClient->parseDateTime($aData['modified']));
+			$mResult->Shared = isset($aData['shared']) ? $aData['shared'] : false;
+			$mResult->FullPath = $mResult->Name !== '' ? $mResult->Path . '/' . $mResult->Name : $mResult->Path ;
 			
-			$bResult->Hash = \CApi::EncodeKeyValues(array(
+			$mResult->Hash = \CApi::EncodeKeyValues(array(
 				'Type' => $sType,
-				'Path' => $bResult->Path,
-				'Name' => $bResult->Name,
-				'Size' => $bResult->Size
+				'Path' => $mResult->Path,
+				'Name' => $mResult->Name,
+				'Size' => $mResult->Size
 			));
-/*				
-			if (!$oItem->IsFolder && $aChild['thumb_exists'])
+
+/*			
+			if (!$mResult->IsFolder && $aData['thumb_exists'])
 			{
-				$oItem->Thumb = true;
-				$aThumb = $oClient->getThumbnail($aChild['path'], "png", "m");
+				$mResult->Thumb = true;
+				$aThumb = $oClient->getThumbnail($aData['path'], "png", "m");
 				if ($aThumb && isset($aThumb[1]))
 				{
-					$oItem->ThumbnailLink = "data:image/png;base64," . base64_encode($aThumb[1]);
+					$mResult->ThumbnailLink = "data:image/png;base64," . base64_encode($aThumb[1]);
 				}
 			}
 */
 			
 		}
-		return $bResult;
+		return $mResult;
 	}	
 	
 	/**
@@ -159,20 +161,17 @@ class DropBoxModule extends AApiModule
 	}	
 	
 	/**
-	 * @param \CAccount $oAccount
 	 */
-	public function GetFile(&$aData)
+	public function onGetFile($Type, $Path, $Name, &$Result)
 	{
-		if ($aData['Type'] === self::$sService)
+		if ($Type === self::$sService)
 		{
-			$oClient = $this->GetClient($aData['Type']);
+			$oClient = $this->GetClient($Type);
 			if ($oClient)
 			{
-				$bResult = fopen('php://memory','wb+');
-				$oClient->getFile('/'.ltrim($aData['Type'], '/').'/'.$aData['Name'], $bResult);
-				rewind($bResult);
-				
-				$aData['@Result'] = $bResult;
+				$Result = fopen('php://memory','wb+');
+				$oClient->getFile('/'.ltrim($Path, '/').'/'.$Name, $Result);
+				rewind($Result);
 			}
 		}
 	}	
