@@ -37,21 +37,25 @@ class DropBoxModule extends AApiModule
 	
 	public function GetStorages(&$aResult)
 	{
-			$oOAuthIntegratorWebclientModule = \CApi::GetModuleDecorator('OAuthIntegratorWebclient');
-			$oSocialAccount = $oOAuthIntegratorWebclientModule->GetAccount(self::$sService);
-			
-			if ($oSocialAccount instanceof COAuthAccount && $oSocialAccount->Type === self::$sService)
-			{		
-				$aResult['@Result'][] = [
-					'Type' => self::$sService, 
-					'IsExternal' => true,
-					'DisplayName' => 'DropBox'
-				];
-			}
+		\CApi::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
+		
+		$oOAuthIntegratorWebclientModule = \CApi::GetModuleDecorator('OAuthIntegratorWebclient');
+		$oSocialAccount = $oOAuthIntegratorWebclientModule->GetAccount(self::$sService);
+
+		if ($oSocialAccount instanceof COAuthAccount && $oSocialAccount->Type === self::$sService)
+		{		
+			$aResult['@Result'][] = [
+				'Type' => self::$sService, 
+				'IsExternal' => true,
+				'DisplayName' => 'DropBox'
+			];
+		}
 	}
 	
 	protected function GetClient($sType)
 	{
+		\CApi::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
+		
 		$mResult = false;
 		if ($sType === self::$sService)
 		{
@@ -71,6 +75,8 @@ class DropBoxModule extends AApiModule
 	 */
 	public function FileExists(&$aData)
 	{
+		\CApi::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
+		
 		if ($aData['Type'] === self::$sService)
 		{
 			$oClient = $this->GetClient($aData['Type']);
@@ -104,6 +110,8 @@ class DropBoxModule extends AApiModule
 	 */
 	protected function PopulateFileInfo($sType, $oClient, $aData)
 	{
+		\CApi::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
+		
 		$mResult = false;
 		if ($aData && is_array($aData))
 		{
@@ -151,6 +159,8 @@ class DropBoxModule extends AApiModule
 	 */
 	public function GetFileInfo($oAccount, $sType, $sPath, $sName, &$bResult, &$bBreak)
 	{
+		\CApi::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
+		
 		$oClient = $this->GetClient($oAccount, $sType);
 		if ($oClient)
 		{
@@ -181,6 +191,8 @@ class DropBoxModule extends AApiModule
 	 */
 	public function GetFiles(&$aData)
 	{
+		\CApi::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
+		
 		if ($aData['Type'] === self::$sService)
 		{
 			$mResult = array();
@@ -218,6 +230,8 @@ class DropBoxModule extends AApiModule
 	 */
 	public function CreateFolder(&$aData)
 	{
+		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		
 		if ($aData['Type'] === self::$sService)
 		{
 			$oClient = $this->GetClient($aData['Type']);
@@ -240,6 +254,8 @@ class DropBoxModule extends AApiModule
 	 */
 	public function CreateFile(&$aData)
 	{
+		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		
 		if ($aData['Type'] === self::$sService)
 		{
 			$oClient = $this->GetClient($aData['Type']);
@@ -273,6 +289,8 @@ class DropBoxModule extends AApiModule
 	 */
 	public function Delete(&$aData)
 	{
+		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		
 		if ($aData['Type'] === self::$sService)
 		{
 			$oClient = $this->GetClient($aData['Type']);
@@ -296,6 +314,8 @@ class DropBoxModule extends AApiModule
 	 */
 	public function Rename(&$aData)
 	{
+		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		
 		if ($aData['Type'] === self::$sService)
 		{
 			$oClient = $this->GetClient($aData['Type']);
@@ -317,6 +337,8 @@ class DropBoxModule extends AApiModule
 	 */
 	public function Move(&$aData)
 	{
+		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		
 		if ($aData['FromType'] === self::$sService)
 		{
 			$oClient = $this->GetClient($aData['FromType']);
@@ -343,6 +365,8 @@ class DropBoxModule extends AApiModule
 	 */
 	public function Copy(&$aData)
 	{
+		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		
 		if ($aData['FromType'] === self::$sService)
 		{
 			$oClient = $this->GetClient($aData['FromType']);
