@@ -172,7 +172,7 @@ class DropBoxModule extends AApiModule
 	
 	/**
 	 */
-	public function onGetFile($Type, $Path, $Name, &$Result)
+	public function onGetFile($UserId, $Type, $Path, $Name, &$Result)
 	{
 		if ($Type === self::$sService)
 		{
