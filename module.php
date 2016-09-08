@@ -119,7 +119,7 @@ class DropBoxModule extends AApiModule
 			
 //			$oSocial = $this->GetSocial($oAccount);
 			$mResult /*@var $mResult \CFileStorageItem */ = new  \CFileStorageItem();
-			$mResult->IsExternal = true;
+//			$mResult->IsExternal = true;
 			$mResult->TypeStr = $sType;
 			$mResult->IsFolder = $aData['is_dir'];
 			$mResult->Id = $this->_basename($aData['path']);
@@ -138,17 +138,10 @@ class DropBoxModule extends AApiModule
 				'Size' => $mResult->Size
 			));
 
-/*			
 			if (!$mResult->IsFolder && $aData['thumb_exists'])
 			{
 				$mResult->Thumb = true;
-				$aThumb = $oClient->getThumbnail($aData['path'], "png", "m");
-				if ($aThumb && isset($aThumb[1]))
-				{
-					$mResult->ThumbnailLink = "data:image/png;base64," . base64_encode($aThumb[1]);
-				}
 			}
-*/
 			
 		}
 		return $mResult;
@@ -172,7 +165,7 @@ class DropBoxModule extends AApiModule
 	
 	/**
 	 */
-	public function onGetFile($UserId, $Type, $Path, $Name, &$Result)
+	public function onGetFile($UserId, $Type, $Path, $Name, $IsThumb, &$Result)
 	{
 		if ($Type === self::$sService)
 		{
@@ -180,7 +173,18 @@ class DropBoxModule extends AApiModule
 			if ($oClient)
 			{
 				$Result = fopen('php://memory','wb+');
-				$oClient->getFile('/'.ltrim($Path, '/').'/'.$Name, $Result);
+				if (!$IsThumb)
+				{
+					$oClient->getFile('/'.ltrim($Path, '/').'/'.$Name, $Result);
+				}
+				else
+				{
+					$aThumb = $oClient->getThumbnail('/'.ltrim($Path, '/').'/'.$Name, "png", "m");
+					if ($aThumb && isset($aThumb[1]))
+					{
+						fwrite($Result, $aThumb[1]);
+					}
+				}
 				rewind($Result);
 			}
 		}
