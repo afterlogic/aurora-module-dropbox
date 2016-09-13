@@ -392,5 +392,16 @@ class DropBoxModule extends AApiModule
 		}
 	}		
 	
-	
+	public function onPopulateFileItem(&$oItem)
+	{
+		if ($oItem->IsLink)
+		{
+			if (false !== strpos($oItem->LinkUrl, 'dl.dropboxusercontent.com') || 
+					false !== strpos($oItem->LinkUrl, 'dropbox.com'))
+			{
+				$oItem->LinkType = 'dropbox';
+				return true;
+			}
+		}
+	}	
 }
