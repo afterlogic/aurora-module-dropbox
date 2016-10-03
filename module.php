@@ -176,13 +176,6 @@ class DropBoxModule extends AApiModule
 			$mResult->LastModified = date_timestamp_get($oClient->parseDateTime($aData['modified']));
 			$mResult->Shared = isset($aData['shared']) ? $aData['shared'] : false;
 			$mResult->FullPath = $mResult->Name !== '' ? $mResult->Path . '/' . $mResult->Name : $mResult->Path ;
-			
-			$mResult->Hash = \CApi::EncodeKeyValues(array(
-				'Type' => $sType,
-				'Path' => $mResult->Path,
-				'Name' => $mResult->Name,
-				'Size' => $mResult->Size
-			));
 
 			if (!$mResult->IsFolder && $aData['thumb_exists'])
 			{
