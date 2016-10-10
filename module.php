@@ -77,9 +77,9 @@ class DropBoxModule extends AApiModule
 	 * Write to the $aResult variable information about DropBox storage.
 	 * 
 	 * @ignore
-	 * @param array $aResult Is passed by reference.
+	 * @param array $aData Is passed by reference.
 	 */
-	public function onAfterGetStorages(&$aResult)
+	public function onAfterGetStorages(&$aData, &$mResult)
 	{
 		\CApi::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
 		
@@ -88,7 +88,7 @@ class DropBoxModule extends AApiModule
 
 		if ($oSocialAccount instanceof COAuthAccount && $oSocialAccount->Type === self::$sService)
 		{		
-			$aResult['@Result'][] = [
+			$mResult[] = [
 				'Type' => self::$sService, 
 				'IsExternal' => true,
 				'DisplayName' => 'DropBox'
@@ -97,12 +97,12 @@ class DropBoxModule extends AApiModule
 	}
 	
 	/**
-	 * Writes to $aData['@Result'] **true** if $aData['Type'] is DropBox account type and $aData['Name'] file is exists in DropBox storage.
+	 * Writes to $mResult **true** if $aData['Type'] is DropBox account type and $aData['Name'] file is exists in DropBox storage.
 	 * 
 	 * @ignore
 	 * @param array $aData Is passed by reference.
 	 */
-	public function onAfterFileExists(&$aData)
+	public function onAfterFileExists(&$aData, &$mResult)
 	{
 		\CApi::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
 		
@@ -111,13 +111,12 @@ class DropBoxModule extends AApiModule
 			$oClient = $this->getClient($aData['Type']);
 			if ($oClient)
 			{
-				$bResult = false;
+				$mResult = false;
 
 				if ($oClient->getMetadata('/'.ltrim($aData['Type'], '/').'/'.$aData['Name']))
 				{
-					$bResult = true;
+					$mResult = true;
 				}
-				$aData['@Result'] = $bResult;
 			}
 		}
 	}	
@@ -228,13 +227,13 @@ class DropBoxModule extends AApiModule
 	 * @ignore
 	 * @param array $aData Is passed by reference.
 	 */
-	public function onAfterGetFiles(&$aData)
+	public function onAfterGetFiles(&$aData, &$mResult)
 	{
 		\CApi::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
 		
 		if ($aData['Type'] === self::$sService)
 		{
-			$mResult = array();
+			$mResult['Items'] = array();
 			$oClient = $this->getClient($aData['Type']);
 			if ($oClient)
 			{
@@ -255,11 +254,10 @@ class DropBoxModule extends AApiModule
 					$oItem /*@var $oItem \CFileStorageItem */ = $this->populateFileInfo($aData['Type'], $oClient, $aChild);
 					if ($oItem)
 					{
-						$mResult[] = $oItem;
+						$mResult['Items'][] = $oItem;
 					}
 				}				
 			}
-			$aData['@Result']['Items'] = $mResult;
 		}
 	}	
 
@@ -269,7 +267,7 @@ class DropBoxModule extends AApiModule
 	 * @ignore
 	 * @param array $aData Is passed by reference.
 	 */
-	public function onAfterCreateFolder(&$aData)
+	public function onAfterCreateFolder(&$aData, &$mResult)
 	{
 		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
@@ -278,14 +276,12 @@ class DropBoxModule extends AApiModule
 			$oClient = $this->getClient($aData['Type']);
 			if ($oClient)
 			{
-				$bResult = false;
+				$mResult = false;
 
 				if ($oClient->createFolder('/'.ltrim($aData['Path'], '/').'/'.$aData['FolderName']) !== null)
 				{
-					$bResult = true;
+					$mResult = true;
 				}
-				
-				$aData['@Result'] = $bResult;
 			}
 		}
 	}	
@@ -296,7 +292,7 @@ class DropBoxModule extends AApiModule
 	 * @ignore
 	 * @param array $aData
 	 */
-	public function onAfterCreateFile(&$aData)
+	public function onAfterCreateFile(&$aData, &$mResult)
 	{
 		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
@@ -305,25 +301,23 @@ class DropBoxModule extends AApiModule
 			$oClient = $this->getClient($aData['Type']);
 			if ($oClient)
 			{
-				$bResult = false;
+				$mResult = false;
 
 				$sPath = '/'.ltrim($sPath, '/').'/'.$aData['FileName'];
 				if (is_resource($aData['Data']))
 				{
 					if ($oClient->uploadFile($sPath, \Dropbox\WriteMode::add(), $aData['Data']))
 					{
-						$bResult = true;
+						$mResult = true;
 					}
 				}
 				else
 				{
 					if ($oClient->uploadFileFromString($sPath, \Dropbox\WriteMode::add(), $aData['Data']))
 					{
-						$bResult = true;
+						$mResult = true;
 					}
 				}
-				
-				$aData['@Result'] = $bResult;
 			}
 		}
 	}	
@@ -334,7 +328,7 @@ class DropBoxModule extends AApiModule
 	 * @ignore
 	 * @param array $aData
 	 */
-	public function onAfterDelete(&$aData)
+	public function onAfterDelete(&$aData, &$mResult)
 	{
 		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
@@ -343,15 +337,13 @@ class DropBoxModule extends AApiModule
 			$oClient = $this->getClient($aData['Type']);
 			if ($oClient)
 			{
-				$bResult = false;
+				$mResult = false;
 
 				foreach ($aData['Items'] as $aItem)
 				{
 					$oClient->delete('/'.ltrim($aItem['Path'], '/').'/'.$aItem['Name']);
-					$bResult = true;
+					$mResult = true;
 				}
-
-				$aData['@Result'] = $bResult;
 			}
 		}
 	}	
@@ -362,7 +354,7 @@ class DropBoxModule extends AApiModule
 	 * @ignore
 	 * @param array $aData
 	 */
-	public function onAfterRename(&$aData)
+	public function onAfterRename(&$aData, &$mResult)
 	{
 		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
@@ -371,12 +363,12 @@ class DropBoxModule extends AApiModule
 			$oClient = $this->getClient($aData['Type']);
 			if ($oClient)
 			{
-				$bResult = false;
+				$mResult = false;
 
 				$sPath = ltrim($aData['Path'], '/');
 				if ($oClient->move('/'.$sPath.'/'.$aData['Name'], '/'.$sPath.'/'.$aData['NewName']))
 				{
-					$bResult = true;
+					$mResult = true;
 				}
 			}
 		}
@@ -388,7 +380,7 @@ class DropBoxModule extends AApiModule
 	 * @ignore
 	 * @param array $aData
 	 */
-	public function onAfterMove(&$aData)
+	public function onAfterMove(&$aData, &$mResult)
 	{
 		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
@@ -397,7 +389,7 @@ class DropBoxModule extends AApiModule
 			$oClient = $this->getClient($aData['FromType']);
 			if ($oClient)
 			{
-				$bResult = false;
+				$mResult = false;
 
 				if ($aData['ToType'] === $aData['FromType'])
 				{
@@ -405,10 +397,8 @@ class DropBoxModule extends AApiModule
 					{
 						$oClient->move('/'.ltrim($aData['FromPath'], '/').'/'.$aFile['Name'], '/'.ltrim($aData['ToPath'], '/').'/'.$aFile['Name']);
 					}
-					$bResult = true;
+					$mResult = true;
 				}
-				
-				$aData['@Result'] = $bResult;
 			}
 		}
 	}	
@@ -419,7 +409,7 @@ class DropBoxModule extends AApiModule
 	 * @ignore
 	 * @param array $aData
 	 */
-	public function onAfterCopy(&$aData)
+	public function onAfterCopy(&$aData, &$mResult)
 	{
 		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
@@ -428,7 +418,7 @@ class DropBoxModule extends AApiModule
 			$oClient = $this->getClient($aData['FromType']);
 			if ($oClient)
 			{
-				$bResult = false;
+				$mResult = false;
 
 				if ($aData['ToType'] === $aData['FromType'])
 				{
@@ -436,10 +426,8 @@ class DropBoxModule extends AApiModule
 					{
 						$oClient->copy('/'.ltrim($aData['FromPath'], '/').'/'.$aFile['Name'], '/'.ltrim($aData['ToPath'], '/').'/'.$aFile['Name']);
 					}
-					$bResult = true;
+					$mResult = true;
 				}
-				
-				$aData['@Result'] = $bResult;
 			}
 		}
 	}		
@@ -473,7 +461,7 @@ class DropBoxModule extends AApiModule
 	 * @param object $oItem
 	 * @return boolean
 	 */
-	public function onPopulateFileItem(&$oItem)
+	public function onPopulateFileItem(&$oItem, &$mResult)
 	{
 		if ($oItem->IsLink)
 		{
@@ -481,7 +469,7 @@ class DropBoxModule extends AApiModule
 					false !== strpos($oItem->LinkUrl, 'dropbox.com'))
 			{
 				$oItem->LinkType = 'dropbox';
-				return true;
+				$oItem['@Break'] = true;
 			}
 		}
 	}	
