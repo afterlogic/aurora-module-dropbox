@@ -37,7 +37,6 @@ class DropBoxModule extends AApiModule
 		$this->incClass('Dropbox/autoload');
 		
 		$this->subscribeEvent('Files::GetStorages::after', array($this, 'onAfterGetStorages'));
-		$this->subscribeEvent('Files::FileExists::after', array($this, 'onAfterFileExists'));
 		$this->subscribeEvent('Files::GetFile', array($this, 'onGetFile'));
 		$this->subscribeEvent('Files::GetFiles::after', array($this, 'onAfterGetFiles'));
 		$this->subscribeEvent('Files::CreateFolder::after', array($this, 'onAfterCreateFolder'));
@@ -96,31 +95,6 @@ class DropBoxModule extends AApiModule
 		}
 	}
 	
-	/**
-	 * Writes to $mResult **true** if $aData['Type'] is DropBox account type and $aData['Name'] file is exists in DropBox storage.
-	 * 
-	 * @ignore
-	 * @param array $aData Is passed by reference.
-	 */
-	public function onAfterFileExists(&$aData, &$mResult)
-	{
-		\CApi::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
-		
-		if ($aData['Type'] === self::$sService)
-		{
-			$oClient = $this->getClient($aData['Type']);
-			if ($oClient)
-			{
-				$mResult = false;
-
-				if ($oClient->getMetadata('/'.ltrim($aData['Type'], '/').'/'.$aData['Name']))
-				{
-					$mResult = true;
-				}
-			}
-		}
-	}	
-
 	/**
 	 * Returns directory name for the specified path.
 	 * 
@@ -386,22 +360,22 @@ class DropBoxModule extends AApiModule
 	 * @ignore
 	 * @param array $aData
 	 */
-	public function onAfterMove(&$aData, &$mResult)
+	public function onAfterMove($UserId, $FromType, $ToType, $FromPath, $ToPath, $Files, &$mResult)
 	{
 		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
-		if ($aData['FromType'] === self::$sService)
+		if ($FromType === self::$sService)
 		{
-			$oClient = $this->getClient($aData['FromType']);
+			$oClient = $this->getClient($FromType);
 			if ($oClient)
 			{
 				$mResult = false;
 
-				if ($aData['ToType'] === $aData['FromType'])
+				if ($ToType === $FromType)
 				{
-					foreach ($aData['Files'] as $aFile)
+					foreach ($Files as $aFile)
 					{
-						$oClient->move('/'.ltrim($aData['FromPath'], '/').'/'.$aFile['Name'], '/'.ltrim($aData['ToPath'], '/').'/'.$aFile['Name']);
+						$oClient->move('/'.ltrim($FromPath, '/').'/'.$aFile['Name'], '/'.ltrim($ToPath, '/').'/'.$aFile['Name']);
 					}
 					$mResult = true;
 				}
@@ -415,22 +389,22 @@ class DropBoxModule extends AApiModule
 	 * @ignore
 	 * @param array $aData
 	 */
-	public function onAfterCopy(&$aData, &$mResult)
+	public function onAfterCopy($UserId, $FromType, $ToType, $FromPath, $ToPath, $Files, &$mResult)
 	{
 		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
-		if ($aData['FromType'] === self::$sService)
+		if ($FromType === self::$sService)
 		{
-			$oClient = $this->getClient($aData['FromType']);
+			$oClient = $this->getClient($FromType);
 			if ($oClient)
 			{
 				$mResult = false;
 
-				if ($aData['ToType'] === $aData['FromType'])
+				if ($ToType === $FromType)
 				{
-					foreach ($aData['Files'] as $aFile)
+					foreach ($Files as $aFile)
 					{
-						$oClient->copy('/'.ltrim($aData['FromPath'], '/').'/'.$aFile['Name'], '/'.ltrim($aData['ToPath'], '/').'/'.$aFile['Name']);
+						$oClient->copy('/'.ltrim($FromPath, '/').'/'.$aFile['Name'], '/'.ltrim($ToPath, '/').'/'.$aFile['Name']);
 					}
 					$mResult = true;
 				}
@@ -467,7 +441,7 @@ class DropBoxModule extends AApiModule
 	 * @param object $oItem
 	 * @return boolean
 	 */
-	public function onPopulateFileItem(&$oItem, &$mResult)
+	public function onPopulateFileItem($oItem, &$mResult)
 	{
 		if ($oItem->IsLink)
 		{
@@ -475,7 +449,7 @@ class DropBoxModule extends AApiModule
 					false !== strpos($oItem->LinkUrl, 'dropbox.com'))
 			{
 				$oItem->LinkType = 'dropbox';
-				$oItem['@Break'] = true;
+				$mResult['@Break'] = true;
 			}
 		}
 	}	
