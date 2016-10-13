@@ -79,7 +79,7 @@ class DropBoxModule extends AApiModule
 	 * @ignore
 	 * @param array $aData Is passed by reference.
 	 */
-	public function onAfterGetStorages(&$aData, &$mResult)
+	public function onAfterGetStorages($UserId, &$mResult)
 	{
 		\CApi::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
 		
@@ -227,31 +227,31 @@ class DropBoxModule extends AApiModule
 	 * @ignore
 	 * @param array $aData Is passed by reference.
 	 */
-	public function onAfterGetFiles(&$aData, &$mResult)
+	public function onAfterGetFiles($UserId, $Type, $Path, $Pattern, &$mResult)
 	{
 		\CApi::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
 		
-		if ($aData['Type'] === self::$sService)
+		if ($Type === self::$sService)
 		{
 			$mResult['Items'] = array();
-			$oClient = $this->getClient($aData['Type']);
+			$oClient = $this->getClient($Type);
 			if ($oClient)
 			{
 				$aItems = array();
-				$Path = '/'.ltrim($aData['Path'], '/');
-				if (empty($aData['Pattern']))
+				$Path = '/'.ltrim($Path, '/');
+				if (empty($Pattern))
 				{
 					$aItem = $oClient->getMetadataWithChildren($Path);
 					$aItems = $aItem['contents'];
 				}
 				else
 				{
-					$aItems = $oClient->searchFileNames($aData['Path'], $aData['Pattern']);
+					$aItems = $oClient->searchFileNames($Path, $Pattern);
 				}
 
 				foreach($aItems as $aChild) 
 				{
-					$oItem /*@var $oItem \CFileStorageItem */ = $this->populateFileInfo($aData['Type'], $oClient, $aChild);
+					$oItem /*@var $oItem \CFileStorageItem */ = $this->populateFileInfo($Type, $oClient, $aChild);
 					if ($oItem)
 					{
 						$mResult['Items'][] = $oItem;
@@ -267,18 +267,18 @@ class DropBoxModule extends AApiModule
 	 * @ignore
 	 * @param array $aData Is passed by reference.
 	 */
-	public function onAfterCreateFolder(&$aData, &$mResult)
+	public function onAfterCreateFolder($UserId, $Type, $Path, $FolderName, &$mResult)
 	{
 		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
-		if ($aData['Type'] === self::$sService)
+		if ($Type === self::$sService)
 		{
-			$oClient = $this->getClient($aData['Type']);
+			$oClient = $this->getClient($Type);
 			if ($oClient)
 			{
 				$mResult = false;
 
-				if ($oClient->createFolder('/'.ltrim($aData['Path'], '/').'/'.$aData['FolderName']) !== null)
+				if ($oClient->createFolder('/'.ltrim($Path, '/').'/'.$FolderName) !== null)
 				{
 					$mResult = true;
 				}
@@ -292,28 +292,34 @@ class DropBoxModule extends AApiModule
 	 * @ignore
 	 * @param array $aData
 	 */
-	public function onAfterCreateFile(&$aData, &$mResult)
+	public function onAfterCreateFile($UserId, $Type, $Path, $Name, $Data, &$Result)
 	{
 		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
-		if ($aData['Type'] === self::$sService)
+		if ($Type === self::$sService)
 		{
-			$oClient = $this->getClient($aData['Type']);
+			$oClient = $this->getClient($Type);
 			if ($oClient)
 			{
 				$mResult = false;
 
-				$sPath = '/'.ltrim($sPath, '/').'/'.$aData['FileName'];
-				if (is_resource($aData['Data']))
+				$Path = '/'.ltrim($Path, '/').'/'.$Name;
+				if (is_resource($Data))
 				{
-					if ($oClient->uploadFile($sPath, \Dropbox\WriteMode::add(), $aData['Data']))
+					if ($oClient->uploadFile(
+						$Path, 
+						\Dropbox\WriteMode::add(), 
+						$Data))
 					{
 						$mResult = true;
 					}
 				}
 				else
 				{
-					if ($oClient->uploadFileFromString($sPath, \Dropbox\WriteMode::add(), $aData['Data']))
+					if ($oClient->uploadFileFromString(
+						$Path, 
+						\Dropbox\WriteMode::add(), 
+						$Data))
 					{
 						$mResult = true;
 					}
@@ -328,18 +334,18 @@ class DropBoxModule extends AApiModule
 	 * @ignore
 	 * @param array $aData
 	 */
-	public function onAfterDelete(&$aData, &$mResult)
+	public function onAfterDelete($UserId, $Type, $Items, &$mResult)
 	{
 		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
-		if ($aData['Type'] === self::$sService)
+		if ($Type === self::$sService)
 		{
-			$oClient = $this->getClient($aData['Type']);
+			$oClient = $this->getClient($Type);
 			if ($oClient)
 			{
 				$mResult = false;
 
-				foreach ($aData['Items'] as $aItem)
+				foreach ($Items as $aItem)
 				{
 					$oClient->delete('/'.ltrim($aItem['Path'], '/').'/'.$aItem['Name']);
 					$mResult = true;
@@ -354,19 +360,19 @@ class DropBoxModule extends AApiModule
 	 * @ignore
 	 * @param array $aData
 	 */
-	public function onAfterRename(&$aData, &$mResult)
+	public function onAfterRename($UserId, $Type, $Path, $Name, $NewName, $IsLink, &$mResult)
 	{
 		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
-		if ($aData['Type'] === self::$sService)
+		if ($Type === self::$sService)
 		{
-			$oClient = $this->getClient($aData['Type']);
+			$oClient = $this->getClient($Type);
 			if ($oClient)
 			{
 				$mResult = false;
 
-				$sPath = ltrim($aData['Path'], '/');
-				if ($oClient->move('/'.$sPath.'/'.$aData['Name'], '/'.$sPath.'/'.$aData['NewName']))
+				$sPath = ltrim($Path, '/');
+				if ($oClient->move('/'.$Path.'/'.$Name, '/'.$sPath.'/'.$NewName))
 				{
 					$mResult = true;
 				}
