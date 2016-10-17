@@ -90,7 +90,7 @@ class DropBoxModule extends AApiModule
 			$mResult[] = [
 				'Type' => self::$sService, 
 				'IsExternal' => true,
-				'DisplayName' => 'DropBox'
+				'DisplayName' => 'Dropbox'
 			];
 		}
 	}
