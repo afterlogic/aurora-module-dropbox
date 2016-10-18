@@ -40,7 +40,7 @@ class DropBoxModule extends AApiModule
 		$this->subscribeEvent('Files::GetFile', array($this, 'onGetFile'));
 		$this->subscribeEvent('Files::GetFiles::after', array($this, 'onAfterGetFiles'));
 		$this->subscribeEvent('Files::CreateFolder::after', array($this, 'onAfterCreateFolder'));
-		$this->subscribeEvent('Files::CreateFile::after', array($this, 'onAfterCreateFile'));
+		$this->subscribeEvent('Files::CreateFile', array($this, 'onCreateFile'));
 		$this->subscribeEvent('Files::Delete::after', array($this, 'onAfterDelete'));
 		$this->subscribeEvent('Files::Rename::after', array($this, 'onAfterRename'));
 		$this->subscribeEvent('Files::Move::after', array($this, 'onAfterMove'));
@@ -266,7 +266,7 @@ class DropBoxModule extends AApiModule
 	 * @ignore
 	 * @param array $aData
 	 */
-	public function onAfterCreateFile($aArgs, &$Result)
+	public function onCreateFile($aArgs, &$Result)
 	{
 		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
 		
