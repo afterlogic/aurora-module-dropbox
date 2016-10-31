@@ -422,16 +422,15 @@ class DropBoxModule extends AApiModule
 	 * @param boolean $bResult
 	 * @param boolean $bBreak
 	 */
-	public function onAfterGetFileInfo($oAccount, $sType, $sPath, $sName, &$bResult, &$bBreak)
+	public function onAfterGetFileInfo($aArgs, &$bResult)
 	{
 		\CApi::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
 		
-		$oClient = $this->GetClient($oAccount, $sType);
+		$oClient = $this->GetClient($aArgs['Type']);
 		if ($oClient)
 		{
-			$bBreak = true;
-			$aData = $oClient->getMetadata('/'.ltrim($sPath, '/').'/'.$sName);
-			$bResult = $this->PopulateFileInfo($oAccount, $sType, $oClient, $aData);
+			$aData = $oClient->getMetadata('/'.ltrim($aArgs['Path'], '/').'/'.$aArgs['Name']);
+			$bResult = $this->PopulateFileInfo($aArgs['Type'], $oClient, $aData);
 		}
 	}	
 	
