@@ -178,7 +178,7 @@ class DropBoxModule extends AApiModule
 			if ($oClient)
 			{
 				$mResult = fopen('php://memory','wb+');
-				if (!$aArgs['Thumb'])
+				if (!isset($aArgs['Thumb']))
 				{
 					$oClient->getFile('/'.ltrim($aArgs['Path'], '/').'/'.$aArgs['Name'], $mResult);
 				}
