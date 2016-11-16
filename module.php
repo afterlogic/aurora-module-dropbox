@@ -18,439 +18,164 @@
  * @package Modules
  */
 
-class DropBoxModule extends AApiModule
+class DropboxModule extends AApiModule
 {
-	protected static $sService = 'dropbox';
+	protected $sService = 'dropbox';
 	
-	protected $aRequireModules = array(
-		'OAuthIntegratorWebclient', 'DropBoxAuthWebclient'
+	protected $aSettingsMap = array(
+		'EnableModule' => array(false, 'bool'),
+		'Id' => array('', 'string'),
+		'Secret' => array('', 'string')
 	);
 	
-	/***** private functions *****/
-	/**
-	 * Initializes DropBox Module.
-	 * 
-	 * @ignore
-	 */
 	public function init() 
 	{
-		$this->incClass('Dropbox/autoload');
-		
-		$this->subscribeEvent('Files::GetStorages::after', array($this, 'onAfterGetStorages'));
-		$this->subscribeEvent('Files::GetFile', array($this, 'onGetFile'));
-		$this->subscribeEvent('Files::GetFiles::after', array($this, 'onAfterGetFiles'));
-		$this->subscribeEvent('Files::CreateFolder::after', array($this, 'onAfterCreateFolder'));
-		$this->subscribeEvent('Files::CreateFile', array($this, 'onCreateFile'));
-		$this->subscribeEvent('Files::Delete::after', array($this, 'onAfterDelete'));
-		$this->subscribeEvent('Files::Rename::after', array($this, 'onAfterRename'));
-		$this->subscribeEvent('Files::Move::after', array($this, 'onAfterMove'));
-		$this->subscribeEvent('Files::Copy::after', array($this, 'onAfterCopy')); 
-		$this->subscribeEvent('Files::GetFileInfo::after', array($this, 'onAfterGetFileInfo'));
+		$this->subscribeEvent('OAuthIntegratorWebclient::GetServices::after', array($this, 'onAfterGetServices'));
+		$this->subscribeEvent('GetServicesSettings', array($this, 'onGetServicesSettings'));
+		$this->subscribeEvent('UpdateServicesSettings', array($this, 'onUpdateServicesSettings'));
 	}
 	
 	/**
-	 * Obtaines DropBox client if passed $sType is DropBox account type.
-	 * 
-	 * @param string $sType Service type.
-	 * @return \Dropbox\Client
-	 */
-	protected function getClient($sType)
-	{
-		\CApi::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
-		
-		$mResult = false;
-		if ($sType === self::$sService)
-		{
-			$oOAuthIntegratorWebclientModule = \CApi::GetModuleDecorator('OAuthIntegratorWebclient');
-			$oSocialAccount = $oOAuthIntegratorWebclientModule->GetAccount($sType);
-			if ($oSocialAccount)
-			{
-				$mResult = new \Dropbox\Client($oSocialAccount->AccessToken, "Aurora App");
-			}
-		}
-		
-		return $mResult;
-	}	
-	
-	/**
-	 * Write to the $aResult variable information about DropBox storage.
+	 * Adds service name to array passed by reference.
 	 * 
 	 * @ignore
-	 * @param array $aData Is passed by reference.
+	 * @param array $aServices Array with services names passed by reference.
 	 */
-	public function onAfterGetStorages($aArgs, &$mResult)
+	public function onAfterGetServices($aArgs, &$aServices)
 	{
-		\CApi::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
-		
-		$oOAuthIntegratorWebclientModule = \CApi::GetModuleDecorator('OAuthIntegratorWebclient');
-		$oSocialAccount = $oOAuthIntegratorWebclientModule->GetAccount(self::$sService);
+		if ($this->getConfig('EnableModule', false))
+		{
+//			if ($this->issetScope('auth'))
+//			{
+				$aServices[] = $this->sService;
+//			}
+		}
 
-		if ($oSocialAccount instanceof COAuthAccount && $oSocialAccount->Type === self::$sService)
-		{		
-			$mResult[] = [
-				'Type' => self::$sService, 
-				'IsExternal' => true,
-				'DisplayName' => 'Dropbox'
-			];
+	}
+	
+	/**
+	 * Adds service settings to array passed by reference.
+	 * 
+	 * @ignore
+	 * @param array $aServices Array with services settings passed by reference.
+	 */
+	public function onGetServicesSettings(&$aServices)
+	{
+		$aSettings = $this->GetSettings();
+		if (!empty($aSettings))
+		{
+			$aServices[] = $aSettings;
 		}
 	}
 	
 	/**
-	 * Returns directory name for the specified path.
+	 * Updates service settings.
 	 * 
-	 * @param string $sPath Path to the file.
-	 * @return string
+	 * @ignore
+	 * @param array $aServices Array with new values for service settings.
+	 * 
+	 * @throws \System\Exceptions\AuroraApiException
 	 */
-	protected function getDirName($sPath)
+	public function onUpdateServicesSettings($aServices)
 	{
-		$sPath = dirname($sPath);
-		return str_replace(DIRECTORY_SEPARATOR, '/', $sPath); 
+		$aSettings = $aServices[$this->sService];
+		
+		if (is_array($aSettings))
+		{
+			$this->UpdateSettings($aSettings['EnableModule'], $aSettings['Id'], $aSettings['Secret']);
+		}
+	}
+	/***** private functions *****/
+	
+	/**
+	 * Updates service settings.
+	 * 
+	 * @param boolean $EnableModule **true** if module should be enabled.
+	 * @param string $Id Service app identificator.
+	 * @param string $Secret Service app secret.
+	 * @param string $Key Service app key.
+	 * 
+	 * @throws \System\Exceptions\AuroraApiException
+	 */
+	public function UpdateSettings($EnableModule, $Id, $Secret, $Key)
+	{
+		\CApi::checkUserRoleIsAtLeast(\EUserRole::TenantAdmin);
+		
+		try
+		{
+			$this->setConfig('EnableModule', $EnableModule);
+			$this->setConfig('Id', $Id);
+			$this->setConfig('Secret', $Secret);
+			$this->saveModuleConfig();
+		}
+		catch (Exception $ex)
+		{
+			throw new \System\Exceptions\AuroraApiException(\System\Notifications::CanNotSaveSettings);
+		}
+		
+		return true;
 	}
 	
 	/**
-	 * Returns base name for the specified path.
+	 * Deletes DropBox account.
 	 * 
-	 * @param string $sPath Path to the file.
-	 * @return string
-	 */
-	protected function getBaseName($sPath)
-	{
-		$aPath = explode('/', $sPath);
-		return end($aPath); 
-	}
-
-	/**
-	 * Populates file info.
-	 * 
-	 * @param string $sType Service type.
-	 * @param \Dropbox\Client $oClient DropBox client.
-	 * @param array $aData Array contains information about file.
-	 * @return \CFileStorageItem|false
-	 */
-	protected function populateFileInfo($sType, $oClient, $aData)
-	{
-		\CApi::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
-		
-		$mResult = false;
-		if ($aData && is_array($aData))
-		{
-			$sPath = ltrim($this->getDirName($aData['path']), '/');
-			
-//			$oSocial = $this->GetSocial($oAccount);
-			$mResult /*@var $mResult \CFileStorageItem */ = new  \CFileStorageItem();
-//			$mResult->IsExternal = true;
-			$mResult->TypeStr = $sType;
-			$mResult->IsFolder = $aData['is_dir'];
-			$mResult->Id = $this->getBaseName($aData['path']);
-			$mResult->Name = $mResult->Id;
-			$mResult->Path = !empty($sPath) ? '/'.$sPath : $sPath;
-			$mResult->Size = $aData['bytes'];
-//			$bResult->Owner = $oSocial->Name;
-			$mResult->LastModified = date_timestamp_get($oClient->parseDateTime($aData['modified']));
-			$mResult->Shared = isset($aData['shared']) ? $aData['shared'] : false;
-			$mResult->FullPath = $mResult->Name !== '' ? $mResult->Path . '/' . $mResult->Name : $mResult->Path ;
-
-			if (!$mResult->IsFolder && $aData['thumb_exists'])
-			{
-				$mResult->Thumb = true;
-			}
-			
-		}
-		return $mResult;
-	}	
-	
-	/**
-	 * Writes to the $mResult variable open file source if $sType is DropBox account type.
-	 * 
-	 * @ignore
-	 * @param int $iUserId Identificator of the authenticated user.
-	 * @param string $sType Service type.
-	 * @param string $sPath File path.
-	 * @param string $sName File name.
-	 * @param boolean $bThumb **true** if thumbnail is expected.
-	 * @param mixed $mResult
-	 */
-	public function onGetFile($aArgs, &$mResult)
-	{
-		if ($aArgs['Type'] === self::$sService)
-		{
-			$oClient = $this->getClient($aArgs['Type']);
-			if ($oClient)
-			{
-				$mResult = fopen('php://memory','wb+');
-				if (!isset($aArgs['Thumb']))
-				{
-					$oClient->getFile('/'.ltrim($aArgs['Path'], '/').'/'.$aArgs['Name'], $mResult);
-				}
-				else
-				{
-					$aThumb = $oClient->getThumbnail('/'.ltrim($aArgs['Path'], '/').'/'.$aArgs['Name'], "png", "m");
-					if ($aThumb && isset($aThumb[1]))
-					{
-						fwrite($mResult, $aThumb[1]);
-					}
-				}
-				rewind($mResult);
-			}
-		}
-	}	
-	
-	/**
-	 * Writes to $aData variable list of DropBox files if $aData['Type'] is DropBox account type.
-	 * 
-	 * @ignore
-	 * @param array $aData Is passed by reference.
-	 */
-	public function onAfterGetFiles($aArgs, &$mResult)
-	{
-		\CApi::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
-		
-		if ($aArgs['Type'] === self::$sService)
-		{
-			$mResult['Items'] = array();
-			$oClient = $this->getClient($aArgs['Type']);
-			if ($oClient)
-			{
-				$aItems = array();
-				$Path = '/'.ltrim($aArgs['Path'], '/');
-				if (empty($aArgs['Pattern']))
-				{
-					$aItem = $oClient->getMetadataWithChildren($Path);
-					$aItems = $aItem['contents'];
-				}
-				else
-				{
-					$aItems = $oClient->searchFileNames($Path, $aArgs['Pattern']);
-				}
-
-				foreach($aItems as $aChild) 
-				{
-					$oItem /*@var $oItem \CFileStorageItem */ = $this->populateFileInfo($aArgs['Type'], $oClient, $aChild);
-					if ($oItem)
-					{
-						$mResult['Items'][] = $oItem;
-					}
-				}				
-			}
-		}
-	}	
-
-	/**
-	 * Creates folder if $aData['Type'] is DropBox account type.
-	 * 
-	 * @ignore
-	 * @param array $aData Is passed by reference.
-	 */
-	public function onAfterCreateFolder($aArgs, &$mResult)
-	{
-		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
-		
-		if ($aArgs['Type'] === self::$sService)
-		{
-			$oClient = $this->getClient($aArgs['Type']);
-			if ($oClient)
-			{
-				$mResult = false;
-
-				if ($oClient->createFolder('/'.ltrim($aArgs['Path'], '/').'/'.$aArgs['FolderName']) !== null)
-				{
-					$mResult = true;
-				}
-			}
-		}
-	}	
-
-	/**
-	 * Creates file if $aData['Type'] is DropBox account type.
-	 * 
-	 * @ignore
-	 * @param array $aData
-	 */
-	public function onCreateFile($aArgs, &$Result)
-	{
-		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
-		
-		if ($aArgs['Type'] === self::$sService)
-		{
-			$oClient = $this->getClient($aArgs['Type']);
-			if ($oClient)
-			{
-				$mResult = false;
-
-				$Path = '/'.ltrim($aArgs['Path'], '/').'/'.$aArgs['Name'];
-				if (is_resource($aArgs['Data']))
-				{
-					if ($oClient->uploadFile(
-						$Path, 
-						\Dropbox\WriteMode::add(), 
-						$aArgs['Data']))
-					{
-						$mResult = true;
-					}
-				}
-				else
-				{
-					if ($oClient->uploadFileFromString(
-						$Path, 
-						\Dropbox\WriteMode::add(), 
-						$aArgs['Data']))
-					{
-						$mResult = true;
-					}
-				}
-			}
-		}
-	}	
-
-	/**
-	 * Deletes file if $aData['Type'] is DropBox account type.
-	 * 
-	 * @ignore
-	 * @param array $aData
-	 */
-	public function onAfterDelete($aArgs, &$mResult)
-	{
-		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
-		
-		if ($aArgs['Type'] === self::$sService)
-		{
-			$oClient = $this->getClient($aArgs['Type']);
-			if ($oClient)
-			{
-				$mResult = false;
-
-				foreach ($aArgs['Items'] as $aItem)
-				{
-					$oClient->delete('/'.ltrim($aItem['Path'], '/').'/'.$aItem['Name']);
-					$mResult = true;
-				}
-			}
-		}
-	}	
-
-	/**
-	 * Renames file if $aData['Type'] is DropBox account type.
-	 * 
-	 * @ignore
-	 * @param array $aData
-	 */
-	public function onAfterRename($aArgs, &$mResult)
-	{
-		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
-		
-		if ($aArgs['Type'] === self::$sService)
-		{
-			$oClient = $this->getClient($aArgs['Type']);
-			if ($oClient)
-			{
-				$mResult = false;
-
-				$sPath = ltrim($aArgs['Path'], '/');
-				if ($oClient->move('/'.$sPath.'/'.$aArgs['Name'], '/'.$sPath.'/'.$aArgs['NewName']))
-				{
-					$mResult = true;
-				}
-			}
-		}
-	}	
-
-	/**
-	 * Moves file if $aData['Type'] is DropBox account type.
-	 * 
-	 * @ignore
-	 * @param array $aData
-	 */
-	public function onAfterMove($aArgs, &$mResult)
-	{
-		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
-		
-		if ($aArgs['FromType'] === self::$sService)
-		{
-			$oClient = $this->getClient($aArgs['FromType']);
-			if ($oClient)
-			{
-				$mResult = false;
-
-				if ($aArgs['ToType'] === $aArgs['FromType'])
-				{
-					foreach ($aArgs['Files'] as $aFile)
-					{
-						$oClient->move('/'.ltrim($aArgs['FromPath'], '/').'/'.$aFile['Name'], '/'.ltrim($aArgs['ToPath'], '/').'/'.$aFile['Name']);
-					}
-					$mResult = true;
-				}
-			}
-		}
-	}	
-
-	/**
-	 * Copies file if $aData['Type'] is DropBox account type.
-	 * 
-	 * @ignore
-	 * @param array $aData
-	 */
-	public function onAfterCopy($aArgs, &$mResult)
-	{
-		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
-		
-		if ($aArgs['FromType'] === self::$sService)
-		{
-			$oClient = $this->getClient($aArgs['FromType']);
-			if ($oClient)
-			{
-				$mResult = false;
-
-				if ($aArgs['ToType'] === $aArgs['FromType'])
-				{
-					foreach ($aArgs['Files'] as $aFile)
-					{
-						$oClient->copy('/'.ltrim($aArgs['FromPath'], '/').'/'.$aFile['Name'], '/'.ltrim($aArgs['ToPath'], '/').'/'.$aFile['Name']);
-					}
-					$mResult = true;
-				}
-			}
-		}
-	}		
-	
-	/**
-	 * @ignore
-	 * @todo not used
-	 * @param object $oAccount
-	 * @param string $sType
-	 * @param string $sPath
-	 * @param string $sName
-	 * @param boolean $bResult
-	 * @param boolean $bBreak
-	 */
-	public function onAfterGetFileInfo($aArgs, &$bResult)
-	{
-		\CApi::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
-		
-		$oClient = $this->GetClient($aArgs['Type']);
-		if ($oClient)
-		{
-			$aData = $oClient->getMetadata('/'.ltrim($aArgs['Path'], '/').'/'.$aArgs['Name']);
-			$bResult = $this->PopulateFileInfo($aArgs['Type'], $oClient, $aData);
-		}
-	}	
-	
-	/**
-	 * @ignore
-	 * @todo not used
-	 * @param object $oItem
 	 * @return boolean
 	 */
-	public function onPopulateFileItem($oItem, &$mResult)
+	public function DeleteAccount()
 	{
-		if ($oItem->IsLink)
+		\CApi::checkUserRoleIsAtLeast(\EUserRole::NormalUser);
+		
+		$bResult = false;
+		$oOAuthIntegratorWebclientDecorator = \CApi::GetModuleDecorator('OAuthIntegratorWebclient');
+		if ($oOAuthIntegratorWebclientDecorator)
 		{
-			if (false !== strpos($oItem->LinkUrl, 'dl.dropboxusercontent.com') || 
-					false !== strpos($oItem->LinkUrl, 'dropbox.com'))
-			{
-				$oItem->LinkType = 'dropbox';
-				$mResult['@Break'] = true;
-			}
+			$bResult = $oOAuthIntegratorWebclientDecorator->DeleteAccount($this->sService);
 		}
-	}	
-	/***** private functions *****/
+		
+		return $bResult;
+	}
+	/***** public functions might be called with web API *****/
+	
+	
+	/***** public functions might be called with web API *****/
+	/**
+	 * Obtaines list of module settings for authenticated user.
+	 * 
+	 * @return array
+	 */
+	public function GetSettings()
+	{
+		$aResult = array();
+		\CApi::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
+		
+		$oUser = \CApi::getAuthenticatedUser();
+		if (!empty($oUser) && $oUser->Role === \EUserRole::SuperAdmin)
+		{
+			$aResult = array(
+				'Name' => $this->sService,
+				'DisplayName' => $this->GetName(),
+				'EnableModule' => $this->getConfig('EnableModule', false),
+				'Id' => $this->getConfig('Id', ''),
+				'Secret' => $this->getConfig('Secret', '')
+			);
+			
+		}
+		
+		if (!empty($oUser) && $oUser->Role === \EUserRole::NormalUser)
+		{
+			$oAccount = \CApi::GetModuleDecorator('OAuthIntegratorWebclient')->GetAccount($this->sService);
+
+			$aResult = array(
+				'EnableModule' => $this->getConfig('EnableModule', false),
+				'Connected' => $oAccount ? true : false
+			);
+		}
+		$aArgs = array(
+			'OAuthAccount' => $oAccount
+		);
+		$this->broadcastEvent('GetSettings', $aArgs, $aResult);
+		
+		return $aResult;
+	}
+		
 }
