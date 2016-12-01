@@ -22,7 +22,6 @@ module.exports = function (oAppData) {
 		return {
 			start: function (ModulesManager) {
 				ModulesManager.run('AdminPanelWebclient', 'registerAdminPanelTab', [
-//					function () { return require('modules/%ModuleName%/js/views/AdminSettingsView.js'); },
 					function(resolve) {
 						require.ensure(
 							['modules/%ModuleName%/js/views/AdminSettingsView.js'],
