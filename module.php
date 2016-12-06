@@ -177,5 +177,4 @@ class DropboxModule extends AApiModule
 		
 		return $aResult;
 	}
-		
 }
