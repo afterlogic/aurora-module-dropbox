@@ -72,7 +72,7 @@ class DropboxModule extends AApiModule
 	 * Updates service settings.
 	 * 
 	 * @param boolean $EnableModule **true** if module should be enabled.
-	 * @param string $Id Service app identificator.
+	 * @param string $Id Service app identifier.
 	 * @param string $Secret Service app secret.
 	 * @param string $Key Service app key.
 	 * 
@@ -120,7 +120,7 @@ class DropboxModule extends AApiModule
 	
 	/***** public functions might be called with web API *****/
 	/**
-	 * Obtaines list of module settings for authenticated user.
+	 * Obtains list of module settings for authenticated user.
 	 * 
 	 * @return array
 	 */
