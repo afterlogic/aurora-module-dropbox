@@ -15,6 +15,7 @@ module.exports = {
 	EnableModule: false,
 	Id: '',
 	Secret: '',
+	Scopes: [],
 	
 	/**
 	 * Initializes settings from AppData object section of this module.
@@ -33,10 +34,9 @@ module.exports = {
 			this.Scopes = _.isArray(oAppDataSection.Scopes) ? oAppDataSection.Scopes : [];
 			
 			_.each(this.Scopes, function (oScope){
-					oScope.value = ko.observable(oScope.Value);
+					oScope.Value = ko.observable(oScope.Value);
 				}					
 			);
-			
 		}
 	},
 	
@@ -46,11 +46,17 @@ module.exports = {
 	 * @param {boolean} bEnableModule
 	 * @param {string} sId
 	 * @param {string} sSecret
+	 * @param {array} aScopes
 	 */
-	updateAdmin: function (bEnableModule, sId, sSecret)
+	updateAdmin: function (bEnableModule, sId, sSecret, aScopes)
 	{
+		_.each(aScopes, function (oScope){
+				oScope.Value = ko.observable(oScope.Value);
+			}					
+		);
 		this.EnableModule = bEnableModule;
 		this.Id = sId;
 		this.Secret = sSecret;
+		this.Scopes = aScopes;
 	}
 };

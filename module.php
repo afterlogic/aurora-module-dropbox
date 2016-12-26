@@ -63,7 +63,7 @@ class DropboxModule extends AApiModule
 		
 		if (is_array($aSettings))
 		{
-			$this->UpdateSettings($aSettings['EnableModule'], $aSettings['Id'], $aSettings['Secret']);
+			$this->UpdateSettings($aSettings['EnableModule'], $aSettings['Id'], $aSettings['Secret'], $aSettings['Scopes']);
 		}
 	}
 	/***** private functions *****/
@@ -74,11 +74,11 @@ class DropboxModule extends AApiModule
 	 * @param boolean $EnableModule **true** if module should be enabled.
 	 * @param string $Id Service app identifier.
 	 * @param string $Secret Service app secret.
-	 * @param string $Key Service app key.
+	 * @param array $Scopes Service scopes.
 	 * 
 	 * @throws \System\Exceptions\AuroraApiException
 	 */
-	public function UpdateSettings($EnableModule, $Id, $Secret, $Key)
+	public function UpdateSettings($EnableModule, $Id, $Secret, $Scopes)
 	{
 		\CApi::checkUserRoleIsAtLeast(\EUserRole::TenantAdmin);
 		
