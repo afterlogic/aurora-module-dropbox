@@ -22,12 +22,6 @@ class DropboxModule extends AApiModule
 {
 	protected $sService = 'dropbox';
 	
-	protected $aSettingsMap = array(
-		'EnableModule' => array(false, 'bool'),
-		'Id' => array('', 'string'),
-		'Secret' => array('', 'string')
-	);
-	
 	public function init() 
 	{
 		$this->subscribeEvent('GetServicesSettings', array($this, 'onGetServicesSettings'));
