@@ -144,11 +144,11 @@ class DropboxModule extends AApiModule
 				'EnableModule' => $this->getConfig('EnableModule', false),
 				'Connected' => $oAccount ? true : false
 			);
+			$aArgs = array(
+				'OAuthAccount' => $oAccount
+			);
+			$this->broadcastEvent('GetSettings', $aArgs, $aResult);
 		}
-		$aArgs = array(
-			'OAuthAccount' => $oAccount
-		);
-		$this->broadcastEvent('GetSettings', $aArgs, $aResult);
 		
 		return $aResult;
 	}
