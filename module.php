@@ -18,7 +18,9 @@
  * @package Modules
  */
 
-class DropboxModule extends AApiModule
+namespace Aurora\Modules;
+
+class DropboxModule extends \AApiModule
 {
 	protected $sService = 'dropbox';
 	
