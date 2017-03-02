@@ -1,6 +1,6 @@
 <?php
 /**
- * @copyright Copyright (c) 2016, Afterlogic Corp.
+ * @copyright Copyright (c) 2017, Afterlogic Corp.
  * @license AGPL-3.0
  *
  * This code is free software: you can redistribute it and/or modify
@@ -51,7 +51,7 @@ class DropboxModule extends \Aurora\System\AbstractModule
 	 * @ignore
 	 * @param array $aServices Array with new values for service settings.
 	 * 
-	 * @throws \System\Exceptions\AuroraApiException
+	 * @throws \System\Exceptions\ApiException
 	 */
 	public function onUpdateServicesSettings($aServices)
 	{
@@ -72,7 +72,7 @@ class DropboxModule extends \Aurora\System\AbstractModule
 	 * @param string $Secret Service app secret.
 	 * @param array $Scopes Service scopes.
 	 * 
-	 * @throws \System\Exceptions\AuroraApiException
+	 * @throws \System\Exceptions\ApiException
 	 */
 	public function UpdateSettings($EnableModule, $Id, $Secret, $Scopes)
 	{
@@ -87,7 +87,7 @@ class DropboxModule extends \Aurora\System\AbstractModule
 		}
 		catch (Exception $ex)
 		{
-			throw new \System\Exceptions\AuroraApiException(\System\Notifications::CanNotSaveSettings);
+			throw new \System\Exceptions\ApiException(\System\Notifications::CanNotSaveSettings);
 		}
 		
 		return true;
