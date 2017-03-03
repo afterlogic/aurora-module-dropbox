@@ -20,7 +20,7 @@
 
 namespace Aurora\Modules;
 
-class DropboxModule extends \Aurora\System\AbstractModule
+class DropboxModule extends \Aurora\System\Module\AbstractModule
 {
 	protected $sService = 'dropbox';
 	
@@ -51,7 +51,7 @@ class DropboxModule extends \Aurora\System\AbstractModule
 	 * @ignore
 	 * @param array $aServices Array with new values for service settings.
 	 * 
-	 * @throws \System\Exceptions\ApiException
+	 * @throws \Aurora\System\Exceptions\ApiException
 	 */
 	public function onUpdateServicesSettings($aServices)
 	{
@@ -72,7 +72,7 @@ class DropboxModule extends \Aurora\System\AbstractModule
 	 * @param string $Secret Service app secret.
 	 * @param array $Scopes Service scopes.
 	 * 
-	 * @throws \System\Exceptions\ApiException
+	 * @throws \Aurora\System\Exceptions\ApiException
 	 */
 	public function UpdateSettings($EnableModule, $Id, $Secret, $Scopes)
 	{
@@ -87,7 +87,7 @@ class DropboxModule extends \Aurora\System\AbstractModule
 		}
 		catch (Exception $ex)
 		{
-			throw new \System\Exceptions\ApiException(\System\Notifications::CanNotSaveSettings);
+			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::CanNotSaveSettings);
 		}
 		
 		return true;
