@@ -25,7 +25,17 @@ class Module extends \Aurora\System\Module\AbstractModule
 {
 	protected $sService = 'dropbox';
 	
-	public function init() 
+	protected $aRequireModules = array(
+		'OAuthIntegratorWebclient'
+	);
+	
+	/***** private functions *****/
+	/**
+	 * Initializes Dropbox Module.
+	 * 
+	 * @ignore
+	 */
+	public function init()
 	{
 		$this->subscribeEvent('GetServicesSettings', array($this, 'onGetServicesSettings'));
 		$this->subscribeEvent('UpdateServicesSettings', array($this, 'onUpdateServicesSettings'));
@@ -58,12 +68,56 @@ class Module extends \Aurora\System\Module\AbstractModule
 	{
 		$aSettings = $aServices[$this->sService];
 		
-		if (is_array($aSettings))
+		if (\is_array($aSettings))
 		{
-			$this->UpdateSettings($aSettings['EnableModule'], $aSettings['Id'], $aSettings['Secret'], $aSettings['Scopes']);
+			$this->UpdateSettings($aSettings['EnableModule'], $aSettings['Id'], $aSettings['Secret']);
 		}
 	}
 	/***** private functions *****/
+	
+	/***** public functions might be called with web API *****/
+	/**
+	 * Obtains list of module settings for authenticated user.
+	 * 
+	 * @return array
+	 */
+	public function GetSettings()
+	{
+		$aResult = array();
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
+		
+		$oUser = \Aurora\System\Api::getAuthenticatedUser();
+		if (!empty($oUser) && $oUser->Role === \EUserRole::SuperAdmin)
+		{
+			$aResult = array(
+				'Name' => $this->sService,
+				'DisplayName' => $this->GetName(),
+				'EnableModule' => $this->getConfig('EnableModule', false),
+				'Id' => $this->getConfig('Id', ''),
+				'Secret' => $this->getConfig('Secret', '')
+			);
+		}
+		
+		if (!empty($oUser) && $oUser->Role === \EUserRole::NormalUser)
+		{
+			$oAccount = null;
+			$oOAuthIntegratorWebclientDecorator = \Aurora\System\Api::GetModuleDecorator('OAuthIntegratorWebclient');
+			if ($oOAuthIntegratorWebclientDecorator)
+			{
+				$oAccount = $oOAuthIntegratorWebclientDecorator->GetAccount($this->sService);
+			}
+			$aResult = array(
+				'EnableModule' => $this->getConfig('EnableModule', false),
+				'Connected' => $oAccount ? true : false
+			);
+			$aArgs = array(
+				'OAuthAccount' => $oAccount
+			);
+		}
+		$this->broadcastEvent('GetSettings', $aArgs, $aResult);
+		
+		return $aResult;
+	}
 	
 	/**
 	 * Updates service settings.
@@ -71,11 +125,10 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 * @param boolean $EnableModule **true** if module should be enabled.
 	 * @param string $Id Service app identifier.
 	 * @param string $Secret Service app secret.
-	 * @param array $Scopes Service scopes.
 	 * 
 	 * @throws \Aurora\System\Exceptions\ApiException
 	 */
-	public function UpdateSettings($EnableModule, $Id, $Secret, $Scopes)
+	public function UpdateSettings($EnableModule, $Id, $Secret)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::TenantAdmin);
 		
@@ -86,7 +139,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$this->setConfig('Secret', $Secret);
 			$this->saveModuleConfig();
 		}
-		catch (Exception $ex)
+		catch (\Exception $ex)
 		{
 			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::CanNotSaveSettings);
 		}
@@ -113,46 +166,4 @@ class Module extends \Aurora\System\Module\AbstractModule
 		return $bResult;
 	}
 	/***** public functions might be called with web API *****/
-	
-	
-	/***** public functions might be called with web API *****/
-	/**
-	 * Obtains list of module settings for authenticated user.
-	 * 
-	 * @return array
-	 */
-	public function GetSettings()
-	{
-		$aResult = array();
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\EUserRole::Anonymous);
-		
-		$oUser = \Aurora\System\Api::getAuthenticatedUser();
-		if (!empty($oUser) && $oUser->Role === \EUserRole::SuperAdmin)
-		{
-			$aResult = array(
-				'Name' => $this->sService,
-				'DisplayName' => $this->GetName(),
-				'EnableModule' => $this->getConfig('EnableModule', false),
-				'Id' => $this->getConfig('Id', ''),
-				'Secret' => $this->getConfig('Secret', '')
-			);
-			
-		}
-		
-		if (!empty($oUser) && $oUser->Role === \EUserRole::NormalUser)
-		{
-			$oAccount = \Aurora\System\Api::GetModuleDecorator('OAuthIntegratorWebclient')->GetAccount($this->sService);
-
-			$aResult = array(
-				'EnableModule' => $this->getConfig('EnableModule', false),
-				'Connected' => $oAccount ? true : false
-			);
-			$aArgs = array(
-				'OAuthAccount' => $oAccount
-			);
-			$this->broadcastEvent('GetSettings', $aArgs, $aResult);
-		}
-		
-		return $aResult;
-	}
 }

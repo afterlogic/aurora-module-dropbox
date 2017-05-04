@@ -4,7 +4,11 @@ var
 	_ = require('underscore'),
 	ko = require('knockout'),
 	
+	TextUtils = require('%PathToCoreWebclientModule%/js/utils/Text.js'),
+	
 	ModulesManager = require('%PathToCoreWebclientModule%/js/ModulesManager.js'),
+	
+	Screens = require('%PathToCoreWebclientModule%/js/Screens.js'),
 	CAbstractSettingsFormView = ModulesManager.run('AdminPanelWebclient', 'getAbstractSettingsFormViewClass'),
 	
 	Settings = require('modules/%ModuleName%/js/Settings.js')
@@ -21,6 +25,7 @@ function CAdminSettingsView()
 	this.enable = ko.observable(Settings.EnableModule);
 	this.id = ko.observable(Settings.Id);
 	this.secret = ko.observable(Settings.Secret);
+	console.log('Settings.Scopes', Settings.Scopes);
 	this.scopes = ko.observable(Settings.Scopes);
 	/*-- Editable fields */
 }
@@ -45,6 +50,16 @@ CAdminSettingsView.prototype.revertGlobalValues = function()
 	this.id(Settings.Id);
 	this.secret(Settings.Secret);
 	this.scopes(Settings.Scopes);
+};
+
+CAdminSettingsView.prototype.validateBeforeSave = function ()
+{
+	if (this.enable() && (this.id() === '' || this.secret() === ''))
+	{
+		Screens.showError(TextUtils.i18n('COREWEBCLIENT/ERROR_REQUIRED_FIELDS_EMPTY'));
+		return false;
+	}
+	return true;
 };
 
 CAdminSettingsView.prototype.getParametersForSave = function ()
