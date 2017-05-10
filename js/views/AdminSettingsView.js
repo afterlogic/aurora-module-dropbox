@@ -25,7 +25,6 @@ function CAdminSettingsView()
 	this.enable = ko.observable(Settings.EnableModule);
 	this.id = ko.observable(Settings.Id);
 	this.secret = ko.observable(Settings.Secret);
-	console.log('Settings.Scopes', Settings.Scopes);
 	this.scopes = ko.observable(Settings.Scopes);
 	/*-- Editable fields */
 }
