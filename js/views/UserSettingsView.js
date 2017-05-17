@@ -28,9 +28,8 @@ function CUserSettingsView()
 	
 	this.connected = ko.observable(Settings.Connected);
 	this.scopes = ko.observable(Settings.Scopes);
-	
 	this.bRunCallback = false;
-
+	
 	window.dropboxConnectCallback = _.bind(function (bResult, sErrorCode, sModule) {
 		this.bRunCallback = true;
 		
@@ -50,20 +49,39 @@ _.extendOwn(CUserSettingsView.prototype, CAbstractSettingsFormView.prototype);
 CUserSettingsView.prototype.ViewTemplate = '%ModuleName%_UserSettingsView';
 
 /**
- * Tries to connect user to dropbox account.
+ * Checks if connect is allowed and tries to connect in that case.
  */
-CUserSettingsView.prototype.connect = function ()
+CUserSettingsView.prototype.checkAndConnect = function ()
 {
-	var aScopes = [];
-
-	$.removeCookie('oauth-scopes');
+	var
+		oParams = {
+			'Scopes': [],
+			'Service': 'dropbox',
+			'AllowConnect': true
+		}
+	;
 	_.each(this.scopes(), function (oScope) {
 		if (oScope.Value())
 		{
-			aScopes.push(oScope.Name);
+			oParams.Scopes.push(oScope.Name);
 		}
 	});
+	
+	App.broadcastEvent('OAuthAccountChange::before', oParams);
+	
+	if (oParams.AllowConnect)
+	{
+		this.connect(oParams.Scopes);
+	}
+};
 
+/**
+ * Tries to connect user to dropbox account.
+ * @param {array} aScopes
+ */
+CUserSettingsView.prototype.connect = function (aScopes)
+{
+	$.removeCookie('oauth-scopes');
 	$.cookie('oauth-scopes', aScopes.join('|'));
 	$.cookie('oauth-redirect', 'connect');
 	var
@@ -86,27 +104,44 @@ CUserSettingsView.prototype.connect = function ()
 };
 
 /**
+ * Checks if disconnect is allowed and disconnects in that case.
+ */
+CUserSettingsView.prototype.checkAndDisconnect = function ()
+{
+	var
+		oParams = {
+			'Service': 'dropbox',
+			'AllowDisconnect': true
+		}
+	;
+	
+	App.broadcastEvent('OAuthAccountChange::before', oParams);
+	
+	if (oParams.AllowDisconnect && App.isAccountDeletingAvaliable())
+	{
+		this.disconnect();
+	}
+};
+
+/**
  * Disconnects user from dropbox account.
  */
 CUserSettingsView.prototype.disconnect = function ()
 {
-	if (App.isAccountDeletingAvaliable())
-	{
-		Ajax.send(Settings.ServerModuleName, 'DeleteAccount', null, function (oResponse) {
-			if (oResponse.Result)
-			{
-				this.connected(false);
-				_.each(this.scopes(), function (oScope) {
-					oScope.Value(false);
-				});
-				App.broadcastEvent('OAuthAccountChange::after');
-			}
-			else
-			{
-				Api.showErrorByCode(oResponse, '', true);
-			}
-		}, this);
-	}
+	Ajax.send(Settings.ServerModuleName, 'DeleteAccount', null, function (oResponse) {
+		if (oResponse.Result)
+		{
+			this.connected(false);
+			_.each(this.scopes(), function (oScope) {
+				oScope.Value(false);
+			});
+			App.broadcastEvent('OAuthAccountChange::after');
+		}
+		else
+		{
+			Api.showErrorByCode(oResponse, '', true);
+		}
+	}, this);
 };
 
 module.exports = new CUserSettingsView();
