@@ -7,6 +7,8 @@
 		"dropbox/dropbox-sdk": "1.1.*"
 	},
 	"extra": {
-		"installer-name": "Dropbox"
+		"installer-name": "Dropbox",
+		"include-in-mobile": false,
+		"include-in-desktop": true
 	}
 }
