@@ -8,8 +8,6 @@
 
 	},
 	"extra": {
-		"installer-name": "Dropbox",
-		"include-in-mobile": false,
-		"include-in-desktop": true
+		"installer-name": "Dropbox"
 	}
 }
