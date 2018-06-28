@@ -30,8 +30,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 */
 	public function init()
 	{
-		$this->subscribeEvent('GetServicesSettings', array($this, 'onGetServicesSettings'));
-		$this->subscribeEvent('UpdateServicesSettings', array($this, 'onUpdateServicesSettings'));
+		$this->subscribeEvent('OAuthIntegratorWebclient::GetServicesSettings', array($this, 'onGetServicesSettings'));
+		$this->subscribeEvent('OAuthIntegratorWebclient::UpdateServicesSettings', array($this, 'onUpdateServicesSettings'));
 	}
 	
 	/**
