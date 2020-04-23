@@ -125,13 +125,13 @@ CDropboxSettingsFormView.prototype.connect = function (aScopes)
 		iIntervalId = setInterval(_.bind(function() {
 			if (oWin.closed)
 			{
+				clearInterval(iIntervalId);
 				if (!this.bRunCallback)
 				{
 					window.location.reload();
 				}
 				else
 				{
-					clearInterval(iIntervalId);
 					App.broadcastEvent('OAuthAccountChange::after');
 					this.updateSavedState();
 					Settings.updateScopes(this.connected(), this.scopes());
