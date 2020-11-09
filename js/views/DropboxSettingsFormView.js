@@ -35,7 +35,7 @@ function CDropboxSettingsFormView()
 		
 		if (!bResult)
 		{
-			Api.showErrorByCode({'ErrorCode': Types.pInt(sErrorCode), 'ErrorMessage': '', 'ErrorModule': sModule}, '', true);
+			Api.showErrorByCode({'ErrorCode': Types.pInt(sErrorCode), 'ErrorMessage': '', 'Module': sModule}, '', true);
 		}
 		else
 		{
