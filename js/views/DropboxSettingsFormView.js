@@ -121,7 +121,7 @@ CDropboxSettingsFormView.prototype.connect = function (aScopes)
 	$.cookie('oauth-redirect', 'connect');
 	this.bRunCallback = false;
 	var
-		oWin = WindowOpener.open(UrlUtils.getAppPath() + '?oauth=dropbox', 'Dropbox'),
+		oWin = WindowOpener.open(UrlUtils.getAppPath() + '?oauth=dropbox-connect', 'Dropbox'),
 		iIntervalId = setInterval(_.bind(function() {
 			if (oWin.closed)
 			{
