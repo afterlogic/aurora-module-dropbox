@@ -64,21 +64,20 @@
 
 <script>
 import settings from '../../../Dropbox/vue/settings'
-import webApi from "../../../AdminPanelWebclient/vue/src/utils/web-api"
-import notification from "../../../AdminPanelWebclient/vue/src/utils/notification"
-import errors from "../../../AdminPanelWebclient/vue/src/utils/errors"
+import webApi from 'src/utils/web-api'
+import notification from 'src/utils/notification'
+import errors from 'src/utils/errors'
 import UnsavedChangesDialog from 'src/components/UnsavedChangesDialog'
-import _ from "lodash"
+import _ from 'lodash'
 
 export default {
-  name: "DropboxAdminSettings",
+  name: 'DropboxAdminSettings',
   components: {
     UnsavedChangesDialog
   },
-  data() {
+  data () {
     return {
       saving: false,
-  
       enableDropbox: false,
       appSecret: '',
       appId: '',
@@ -86,10 +85,10 @@ export default {
       storage: false
     }
   },
-  mounted() {
+  mounted () {
     this.populate()
   },
-  beforeRouteLeave(to, from, next) {
+  beforeRouteLeave (to, from, next) {
     if (this.hasChanges() && _.isFunction(this?.$refs?.unsavedChangesDialog?.openConfirmDiscardChangesDialog)) {
       this.$refs.unsavedChangesDialog.openConfirmDiscardChangesDialog(next)
     } else {
@@ -97,11 +96,9 @@ export default {
     }
   },
   methods: {
-    hasChanges() {
+    hasChanges () {
       const data = settings.getDropboxSettings()
-    
       let hasChangesScopes = false
-  
       this.scopes.forEach((scope) => {
         if (!hasChangesScopes) {
           if (scope.Name === 'auth') {
@@ -111,26 +108,24 @@ export default {
           }
         }
       })
-    
       return this.enableDropbox !== data.EnableModule ||
           this.appId !== data.Id ||
           hasChangesScopes ||
           this.appSecret !== data.Secret
     },
-    saveDropboxSettings() {
+    saveDropboxSettings () {
       if (this.appId && this.appSecret) {
         this.save()
       } else {
         notification.showError(this.$t('MAILWEBCLIENT.ERROR_REQUIRED_FIELDS_EMPTY'))
       }
     },
-    populate() {
+    populate () {
       const data = settings.getDropboxSettings()
       this.enableDropbox = data.EnableModule
       this.appId = data.Id
       this.scopes = data.Scopes
       this.appSecret = data.Secret
-    
       this.scopes.forEach((scope) => {
         if (scope.Name === 'auth') {
           this.auth = scope.Value
@@ -139,8 +134,7 @@ export default {
         }
       })
     },
-  
-    save() {
+    save () {
       if (!this.saving) {
         this.saving = true
         this.scopes.forEach((scope) => {
@@ -150,7 +144,6 @@ export default {
             scope.Value = this.storage
           }
         })
-      
         const parameters = {
           EnableModule: this.enableDropbox,
           Id: this.appId,
