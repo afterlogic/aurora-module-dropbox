@@ -1,14 +1,18 @@
 import settings from '../../Dropbox/vue/settings'
 
 export default {
-  name: 'DropboxWebclient',
+  moduleName: 'Dropbox',
+
+  requiredModules: [],
+
   init (appData) {
     settings.init(appData)
   },
+
   getAdminSystemTabs () {
     return [
       {
-        name: 'dropbox',
+        tabName: 'dropbox',
         title: 'DROPBOX.LABEL_SETTINGS_TAB',
         component () {
           return import('src/../../../Dropbox/vue/components/DropboxAdminSettings')
