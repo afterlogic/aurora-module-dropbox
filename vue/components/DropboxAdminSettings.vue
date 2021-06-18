@@ -2,7 +2,7 @@
   <q-scroll-area class="full-height full-width">
     <div class="q-pa-lg" style="min-width: 800px">
       <div class="row q-mb-md">
-        <div class="col text-h5">{{ $t('GOOGLE.HEADING_SETTINGS') }}</div>
+        <div class="col text-h5" v-t="'GOOGLE.HEADING_SETTINGS'"/>
       </div>
       <q-card flat bordered class="card-edit-settings">
         <q-card-section>
@@ -10,7 +10,7 @@
             <q-item>
               <q-item-section>
                 <q-checkbox v-model="enableDropbox" color="teal">
-                  <q-item-label caption>{{ $t('DROPBOX.ENABLE_MODULE') }}</q-item-label>
+                  <q-item-label caption v-t="'DROPBOX.ENABLE_MODULE'"/>
                 </q-checkbox>
               </q-item-section>
             </q-item>
@@ -29,14 +29,14 @@
           </div>
           <div class="row q-ml-md">
             <q-item-label caption>
-              <span class="q-ml-sm">{{ $t('DROPBOX.INFO_SETTINGS') }}</span>
+              <span class="q-ml-sm" v-t="'DROPBOX.INFO_SETTINGS'"/>
             </q-item-label>
           </div>
           <div class="row">
             <q-item>
               <q-item-section>
                 <q-checkbox v-model="auth" color="teal">
-                  <q-item-label caption>{{ $t('DROPBOXAUTHWEBCLIENT.SCOPE_AUTH') }}</q-item-label>
+                  <q-item-label caption v-t="'DROPBOXAUTHWEBCLIENT.SCOPE_AUTH'"/>
                 </q-checkbox>
               </q-item-section>
             </q-item>
@@ -45,7 +45,7 @@
             <q-item>
               <q-item-section>
                 <q-checkbox v-model="storage" color="teal">
-                  <q-item-label caption>{{ $t('DROPBOXFILESTORAGE.SCOPE_FILESTORAGE') }}</q-item-label>
+                  <q-item-label caption v-t="'DROPBOXFILESTORAGE.SCOPE_FILESTORAGE'"/>
                 </q-checkbox>
               </q-item-section>
             </q-item>
