@@ -1,6 +1,6 @@
 <template>
   <q-scroll-area class="full-height full-width">
-    <div class="q-pa-lg" style="min-width: 800px">
+    <div class="q-pa-lg">
       <div class="row q-mb-md">
         <div class="col text-h5" v-t="'GOOGLE.HEADING_SETTINGS'"/>
       </div>
