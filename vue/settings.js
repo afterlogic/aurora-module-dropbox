@@ -6,12 +6,12 @@ class DropboxSettings {
   constructor (appData) {
     const dropboxWebclientData = typesUtils.pObject(appData.Dropbox)
     if (!_.isEmpty(dropboxWebclientData)) {
-      this.displayName = dropboxWebclientData.DisplayName
-      this.enableModule = dropboxWebclientData.EnableModule
-      this.id = dropboxWebclientData.Id
-      this.name = dropboxWebclientData.Name
-      this.scopes = dropboxWebclientData.Scopes
-      this.secret = dropboxWebclientData.Secret
+      this.displayName = typesUtils.pString(dropboxWebclientData.DisplayName)
+      this.enableModule = typesUtils.pBool(dropboxWebclientData.EnableModule)
+      this.id = typesUtils.pInt(dropboxWebclientData.Id)
+      this.name = typesUtils.pString(dropboxWebclientData.Name)
+      this.scopes = typesUtils.pArray(dropboxWebclientData.Scopes)
+      this.secret = typesUtils.pString(dropboxWebclientData.Secret)
     }
   }
 
