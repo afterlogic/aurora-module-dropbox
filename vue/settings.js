@@ -8,7 +8,7 @@ class DropboxSettings {
     if (!_.isEmpty(dropboxWebclientData)) {
       this.displayName = typesUtils.pString(dropboxWebclientData.DisplayName)
       this.enableModule = typesUtils.pBool(dropboxWebclientData.EnableModule)
-      this.id = typesUtils.pInt(dropboxWebclientData.Id)
+      this.id = typesUtils.pString(dropboxWebclientData.Id)
       this.name = typesUtils.pString(dropboxWebclientData.Name)
       this.scopes = typesUtils.pArray(dropboxWebclientData.Scopes)
       this.secret = typesUtils.pString(dropboxWebclientData.Secret)

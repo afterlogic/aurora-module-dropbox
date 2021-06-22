@@ -114,7 +114,7 @@ export default {
           this.appSecret !== data.Secret
     },
     saveDropboxSettings () {
-      if (this.appId && this.appSecret) {
+      if ((this.appId && this.appSecret) || !this.enableDropbox) {
         this.save()
       } else {
         notification.showError(this.$t('MAILWEBCLIENT.ERROR_REQUIRED_FIELDS_EMPTY'))
