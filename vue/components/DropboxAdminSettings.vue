@@ -108,10 +108,10 @@ export default {
           }
         }
       })
-      return this.enableDropbox !== data.EnableModule ||
-          this.appId !== data.Id ||
+      return this.enableDropbox !== data.enableModule ||
+          this.appId !== data.id ||
           hasChangesScopes ||
-          this.appSecret !== data.Secret
+          this.appSecret !== data.secret
     },
     saveDropboxSettings () {
       if ((this.appId && this.appSecret) || !this.enableDropbox) {
@@ -122,10 +122,10 @@ export default {
     },
     populate () {
       const data = settings.getDropboxSettings()
-      this.enableDropbox = data.EnableModule
-      this.appId = data.Id
-      this.scopes = data.Scopes
-      this.appSecret = data.Secret
+      this.enableDropbox = data.enableModule
+      this.appId = data.id
+      this.scopes = data.scopes
+      this.appSecret = data.secret
       this.scopes.forEach((scope) => {
         if (scope.Name === 'auth') {
           this.auth = scope.Value

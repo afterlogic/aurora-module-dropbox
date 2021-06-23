@@ -34,12 +34,12 @@ export default {
   },
   getDropboxSettings () {
     return {
-      DisplayName: settings.displayName,
-      EnableModule: settings.enableModule,
-      Id: settings.id,
-      Name: settings.name,
-      Scopes: settings.scopes,
-      Secret: settings.secret
+      displayName: settings.displayName,
+      enableModule: settings.enableModule,
+      id: settings.id,
+      name: settings.name,
+      scopes: settings.scopes,
+      secret: settings.secret
     }
   },
 }
