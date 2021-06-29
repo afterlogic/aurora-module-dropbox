@@ -7,7 +7,7 @@
       <q-card flat bordered class="card-edit-settings">
         <q-card-section>
           <div class="row q-mb-md">
-            <q-checkbox dense v-model="enableDropbox" color="teal">
+            <q-checkbox dense v-model="enableDropbox">
               <q-item-label v-t="'DROPBOX.ENABLE_MODULE'"/>
             </q-checkbox>
           </div>
@@ -29,12 +29,12 @@
             </q-item-label>
           </div>
           <div class="row q-my-md">
-            <q-checkbox dense v-model="auth" color="teal">
+            <q-checkbox dense v-model="auth">
               <q-item-label v-t="'DROPBOXAUTHWEBCLIENT.SCOPE_AUTH'"/>
             </q-checkbox>
           </div>
           <div class="row">
-                <q-checkbox dense v-model="storage" color="teal">
+                <q-checkbox dense v-model="storage">
                   <q-item-label v-t="'DROPBOXFILESTORAGE.SCOPE_FILESTORAGE'"/>
                 </q-checkbox>
           </div>
