@@ -15,7 +15,7 @@ export default {
         tabName: 'dropbox',
         title: 'DROPBOX.LABEL_SETTINGS_TAB',
         component () {
-          return import('src/../../../Dropbox/vue/components/DropboxAdminSettings')
+          return import('./components/DropboxAdminSettings')
         },
       },
     ]
