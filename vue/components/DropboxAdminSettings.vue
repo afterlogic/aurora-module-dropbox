@@ -2,7 +2,7 @@
   <q-scroll-area class="full-height full-width">
     <div class="q-pa-lg">
       <div class="row q-mb-md">
-        <div class="col text-h5" v-t="'GOOGLE.HEADING_SETTINGS'"/>
+        <div class="col text-h5" v-t="'DROPBOX.HEADING_SETTINGS'"/>
       </div>
       <q-card flat bordered class="card-edit-settings">
         <q-card-section>
@@ -14,13 +14,13 @@
           <div class="row q-mb-md">
             <div class="col-2 q-my-sm q-pl-sm required-field" v-t="'OAUTHINTEGRATORWEBCLIENT.LABEL_APP_ID'"></div>
             <div class="col-5">
-              <q-input outlined dense class="bg-white" v-model="appId"/>
+              <q-input outlined dense class="bg-white input" v-model="appId"/>
             </div>
           </div>
           <div class="row q-mb-md">
             <div class="col-2 q-my-sm q-pl-sm required-field" v-t="'OAUTHINTEGRATORWEBCLIENT.LABEL_APP_SECRET'"></div>
             <div class="col-5">
-              <q-input outlined dense class="bg-white" v-model="appSecret"/>
+              <q-input outlined dense class="bg-white input" v-model="appSecret"/>
             </div>
           </div>
           <div class="row">
@@ -162,5 +162,7 @@ export default {
 </script>
 
 <style scoped>
-
+.input {
+  border-radius: 6px;
+}
 </style>
