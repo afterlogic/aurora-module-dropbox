@@ -14,13 +14,13 @@
           <div class="row q-mb-md">
             <div class="col-2 q-my-sm q-pl-sm required-field" v-t="'OAUTHINTEGRATORWEBCLIENT.LABEL_APP_ID'"></div>
             <div class="col-5">
-              <q-input outlined dense class="bg-white" bg-color="white" v-model="appId"/>
+              <q-input outlined dense  bg-color="white" v-model="appId"/>
             </div>
           </div>
           <div class="row q-mb-md">
             <div class="col-2 q-my-sm q-pl-sm required-field" v-t="'OAUTHINTEGRATORWEBCLIENT.LABEL_APP_SECRET'"></div>
             <div class="col-5">
-              <q-input outlined dense class="bg-white" bg-color="white" v-model="appSecret"/>
+              <q-input outlined dense  bg-color="white" v-model="appSecret"/>
             </div>
           </div>
           <div class="row">
