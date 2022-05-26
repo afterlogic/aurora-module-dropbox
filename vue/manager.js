@@ -13,10 +13,10 @@ export default {
     return [
       {
         tabName: 'dropbox',
-        title: 'DROPBOX.LABEL_SETTINGS_TAB',
-        component () {
-          return import('./components/DropboxAdminSettings')
-        },
+        tabTitle: 'DROPBOX.LABEL_SETTINGS_TAB',
+        tabRouteChildren: [
+          { path: 'dropbox', component: () => import('./components/DropboxAdminSettings') },
+        ],
       },
     ]
   },
