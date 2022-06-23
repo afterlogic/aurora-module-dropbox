@@ -4,7 +4,7 @@
 		"bool"
 	],
 	"Disabled_Description": [
-		"",
+		"Setting to true disables the module",
 		"string"
 	],
 	"EnableModule": [
@@ -12,7 +12,7 @@
 		"bool"
 	],
 	"EnableModule_Description": [
-		"",
+		"Setting to true allows for using and configuring the module",
 		"string"
 	],
 	"Id": [
@@ -20,7 +20,7 @@
 		"string"
 	],
 	"Id_Description": [
-		"",
+		"App ID (App key) obtained from Dropbox app",
 		"string"
 	],
 	"Secret": [
@@ -28,7 +28,7 @@
 		"string"
 	],
 	"Secret_Description": [
-		"",
+		"App secret obtained from Dropbox app",
 		"string"
 	]
 }
