@@ -24,6 +24,14 @@ class Module extends \Aurora\System\Module\AbstractModule
         'OAuthIntegratorWebclient'
     );
 
+    /**
+     * @return Module
+     */
+    public static function Decorator()
+    {
+        return parent::Decorator();
+    }
+
     /***** private functions *****/
     /**
      * Initializes Dropbox Module.
@@ -80,7 +88,7 @@ class Module extends \Aurora\System\Module\AbstractModule
         \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::Anonymous);
 
         $oUser = \Aurora\System\Api::getAuthenticatedUser();
-        if (!empty($oUser) && $oUser->Role === \Aurora\System\Enums\UserRole::SuperAdmin) {
+        if ($oUser && $oUser->Role === \Aurora\System\Enums\UserRole::SuperAdmin) {
             $aResult = array(
                 'Name' => $this->sService,
                 'DisplayName' => self::GetName(),
@@ -90,7 +98,7 @@ class Module extends \Aurora\System\Module\AbstractModule
             );
         }
 
-        if (!empty($oUser) && $oUser->isNormalOrTenant()) {
+        if ($oUser && $oUser->isNormalOrTenant()) {
             $oAccount = null;
             $oOAuthIntegratorWebclientDecorator = \Aurora\Modules\OAuthIntegratorWebclient\Module::Decorator();
             if ($oOAuthIntegratorWebclientDecorator) {
