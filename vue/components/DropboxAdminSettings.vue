@@ -116,7 +116,7 @@ export default {
       if ((this.appId && this.appSecret) || !this.enableDropbox) {
         this.save()
       } else {
-        notification.showError(this.$t('MAILWEBCLIENT.ERROR_REQUIRED_FIELDS_EMPTY'))
+        notification.showError(this.$t('COREWEBCLIENT.ERROR_REQUIRED_FIELDS_EMPTY'))
       }
     },
     populate () {
